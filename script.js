@@ -6,9 +6,16 @@ const search = document.getElementById("search");
 const historyBar = document.getElementById("history-bar");
 
 const searchModeBtn = document.getElementById("search-mode-btn");
+const repoModeBtn = document.getElementById("repo-mode-btn");
 const battleModeBtn = document.getElementById("battle-mode-btn");
 const searchSection = document.getElementById("search-section");
+const repoSection = document.getElementById("repo-section");
 const battleSection = document.getElementById("battle-section");
+
+const repoForm = document.getElementById("repo-form");
+const repoMain = document.getElementById("repo-main");
+const repoSearch = document.getElementById("repo-search");
+const repoHistoryBar = document.getElementById("repo-history-bar");
 
 const player1Input = document.getElementById("player1-input");
 const player2Input = document.getElementById("player2-input");
@@ -36,6 +43,7 @@ const winnerSound = document.getElementById("winner-sound");
 const confettiContainer = document.getElementById("confetti-container");
 
 const HISTORY_KEY = "github_search_history";
+const REPO_HISTORY_KEY = "github_repo_search_history";
 const BATTLE_HISTORY_KEY = "github_battle_history";
 const MAX_HISTORY = 5;
 
@@ -72,6 +80,36 @@ const renderHistory = () => {
       getUser(username);
     });
     historyBar.appendChild(item);
+  });
+};
+
+const getRepoSearchHistory = () => {
+  const history = localStorage.getItem(REPO_HISTORY_KEY);
+  return history ? JSON.parse(history) : [];
+};
+
+const saveToRepoHistory = (query) => {
+  let history = getRepoSearchHistory();
+  history = history.filter((item) => item.toLowerCase() !== query.toLowerCase());
+  history.unshift(query);
+  if (history.length > MAX_HISTORY) {
+    history = history.slice(0, MAX_HISTORY);
+  }
+  localStorage.setItem(REPO_HISTORY_KEY, JSON.stringify(history));
+  renderRepoHistory();
+};
+
+const renderRepoHistory = () => {
+  const history = getRepoSearchHistory();
+  repoHistoryBar.innerHTML = "";
+  history.forEach((query) => {
+    const item = document.createElement("span");
+    item.classList.add("history-item");
+    item.textContent = query;
+    item.addEventListener("click", () => {
+      searchRepos(query);
+    });
+    repoHistoryBar.appendChild(item);
   });
 };
 
@@ -221,18 +259,92 @@ form.addEventListener("submit", (e) => {
   }
 });
 
+const searchRepos = async (query) => {
+  try {
+    const { data } = await axios(`https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=10`);
+    createRepoResults(data.items, query);
+    saveToRepoHistory(query);
+  } catch (error) {
+    createRepoError("Error searching repositories. Please try again.");
+    console.error(error);
+  }
+};
+
+const createRepoResults = (repos, query) => {
+  if (repos.length === 0) {
+    repoMain.innerHTML = `<div class="card"><h1>No repositories found for "${query}"</h1></div>`;
+    return;
+  }
+
+  let html = `<div class="repo-results">
+    <h2 class="repo-results-title">Results for "${query}"</h2>
+    <div class="repo-list">`;
+
+  repos.forEach((repo) => {
+    html += `
+      <div class="repo-card">
+        <div class="repo-header">
+          <img src="${repo.owner.avatar_url}" alt="${repo.owner.login}" class="repo-owner-avatar" />
+          <div class="repo-info">
+            <a href="${repo.html_url}" target="_blank" class="repo-name">${repo.full_name}</a>
+            <p class="repo-description">${repo.description || 'No description available'}</p>
+          </div>
+        </div>
+        <div class="repo-stats">
+          <span class="repo-stat"><strong>${repo.stargazers_count.toLocaleString()}</strong> Stars</span>
+          <span class="repo-stat"><strong>${repo.forks_count.toLocaleString()}</strong> Forks</span>
+          <span class="repo-stat"><strong>${repo.open_issues_count.toLocaleString()}</strong> Issues</span>
+        </div>
+        <div class="repo-meta">
+          ${repo.language ? `<span class="repo-language">${repo.language}</span>` : ''}
+          <span class="repo-updated">Updated: ${new Date(repo.updated_at).toLocaleDateString()}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div></div>`;
+  repoMain.innerHTML = html;
+};
+
+const createRepoError = (message) => {
+  repoMain.innerHTML = `<div class="card"><h1>${message}</h1></div>`;
+};
+
+repoForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const query = repoSearch.value.trim();
+  if (query) {
+    searchRepos(query);
+    repoSearch.value = "";
+  }
+});
+
 searchModeBtn.addEventListener("click", () => {
   searchModeBtn.classList.add("active");
+  repoModeBtn.classList.remove("active");
   battleModeBtn.classList.remove("active");
   searchSection.classList.add("active");
+  repoSection.classList.remove("active");
+  battleSection.classList.remove("active");
+});
+
+repoModeBtn.addEventListener("click", () => {
+  repoModeBtn.classList.add("active");
+  searchModeBtn.classList.remove("active");
+  battleModeBtn.classList.remove("active");
+  repoSection.classList.add("active");
+  searchSection.classList.remove("active");
   battleSection.classList.remove("active");
 });
 
 battleModeBtn.addEventListener("click", () => {
   battleModeBtn.classList.add("active");
   searchModeBtn.classList.remove("active");
+  repoModeBtn.classList.remove("active");
   battleSection.classList.add("active");
   searchSection.classList.remove("active");
+  repoSection.classList.remove("active");
 });
 
 const getAchievementBadges = (user) => {
@@ -528,5 +640,6 @@ const checkUrlForBattle = () => {
 };
 
 renderHistory();
+renderRepoHistory();
 renderBattleHistory();
 checkUrlForBattle();
