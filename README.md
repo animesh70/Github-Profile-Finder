@@ -16,7 +16,7 @@ A glimpse of the application's various modes, featuring a clean dark theme and a
 
 | Search Mode (User Card) | Repo Search Mode | Battle Mode (Winner) |
 | :---: | :---: | :---: |
-| <img src="./github_profile_01.jpg" alt="User Search Mode Screenshot" width="300"/> | <img src="./gitub_profile_02.jpg" alt="Repo Search Mode Screenshot" width="300"/> | <img src="./github_profile_03.jpg" alt="Battle Mode Screenshot" width="300"/> |
+| <img src="./assets/github_profile_01.jpg" alt="User Search Mode Screenshot" width="300"/> | <img src="./assets/gitub_profile_02.jpg" alt="Repo Search Mode Screenshot" width="300"/> | <img src="./assets/github_profile_03.jpg" alt="Battle Mode Screenshot" width="300"/> |
 
 #### 🎥 Full Walkthrough Video
 
