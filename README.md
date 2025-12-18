@@ -1,7 +1,7 @@
 # 🔍 GitHub Profile Finder
 
 <div align="center">
-  <img src="./assets/zoro-banner.jpg" alt="Dsa 50 Days Challenge Banner" width="100%" />
+  <img src="./assets/github_profile_05.jpg" alt="Dsa 50 Days Challenge Banner" width="100%" />
 </div>
 
 **Discover, Explore, and Connect—a modern, multi-mode tool to look up and compare GitHub user profiles and repositories.**
